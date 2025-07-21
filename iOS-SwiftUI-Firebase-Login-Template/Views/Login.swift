@@ -6,184 +6,476 @@
 import SwiftUI
 import AuthenticationServices
 
+struct TeacherProfile: Identifiable, Codable {
+    var id: String?
+    let email: String
+    let fullName: String
+    let schoolName: String
+    let department: String?
+    let gradeLevel: String
+    let createdAt: Date
+    let isActive: Bool
+
+    init(email: String, fullName: String, schoolName: String, department: String? = nil, gradeLevel: String) {
+        self.email = email
+        self.fullName = fullName
+        self.schoolName = schoolName
+        self.department = department
+        self.gradeLevel = gradeLevel
+        self.createdAt = Date()
+        self.isActive = true
+    }
+}
+
 struct Login: View {
-	@State private var email: String = ""
-	@State private var password: String = ""
-	@State private var showResetPasswordAlert: Bool = false
-	@State private var resetPasswordEmail: String = ""
-	@State private var showPasswordResetConfirmation: Bool = false
-	@FocusState private var emailIsFocused: Bool
-	@FocusState private var passwordIsFocused: Bool
-	@EnvironmentObject var authViewModel: AuthenticationViewModel
-	
-	var body: some View {
-		VStack(spacing: 0) {
-			Spacer()
-			
-			// Logo and Title
-			VStack(spacing: 5) {
-				Image("FirebaseIcon")
-					.resizable()
-					.scaledToFit()
-					.frame(width: 80, height: 80)
-				
-				Text("Login with Firebase Example")
-					.foregroundColor(.Orange)
-					.font(.system(size: 28))
-					.multilineTextAlignment(.center)
-			}
-			.padding(.bottom, 40)
-			
-			// Form Fields
-			VStack(spacing: 0) {
-				TextField("Email Address", text: $email)
-					.withLoginStyles()
-					.textContentType(.emailAddress)
-					.keyboardType(.emailAddress)
-					.submitLabel(.next)
-					.focused($emailIsFocused)
-					.onSubmit {
-						emailIsFocused = false
-						passwordIsFocused = true
-					}
-				
-				SecureField("Password", text: $password)
-					.withSecureFieldStyles()
-					.submitLabel(.go)
-					.focused($passwordIsFocused)
-					.onSubmit {
-						signIn()
-					}
-				
-				// Forgot Password Link
-				HStack {
-					Spacer()
-					Button {
-						showResetPasswordAlert = true
-					} label: {
-						Text("Forgot Password?")
-							.foregroundColor(.Orange)
-							.font(.footnote)
-					}
-				}
-				.padding(.bottom, 20)
-				
-				// Error Display
-				if let error = authViewModel.error {
-					Text(error.localizedDescription)
-						.font(.footnote)
-						.foregroundColor(.red)
-						.padding(.bottom, 12)
-						.transition(.opacity)
-				}
-				
-				// Sign In Button
-				Button(action: signIn) {
-					if authViewModel.isLoading {
-						ProgressView()
-							.tint(.white)
-					} else {
-						Text("Sign In")
-							.foregroundColor(.white)
-							.font(.headline)
-							.frame(maxWidth: .infinity)
-							.padding()
-							.background(Color.Orange)
-							.cornerRadius(10)
-					}
-				}
-				.disabled(email.isEmpty || password.isEmpty || authViewModel.isLoading)
-				.padding(.bottom, 15)
-				
-				// Sign Up Button
-				Button(action: signUp) {
-					Text("Sign Up")
-						.foregroundColor(.white)
-						.font(.headline)
-						.frame(maxWidth: .infinity)
-						.padding()
-						.background(Color.Orange)
-						.cornerRadius(10)
-				}
-				.disabled(email.isEmpty || password.isEmpty || authViewModel.isLoading)
-			}
-			.padding(.horizontal)
-			
-			// OR Divider
-			HStack {
-				VStack { Divider() }
-				Text("OR")
-					.font(.footnote)
-					.foregroundColor(.secondary)
-					.padding(.horizontal, 8)
-				VStack { Divider() }
-			}
-			.padding(.vertical, 30)
-			.padding(.horizontal)
-			
-			// Social Login Options - Centered in remaining space
-			Spacer()
-			
-			SocialLogins()
-			
-			Spacer()
-		}
-		.padding(.horizontal)
-		.alert("Reset Password", isPresented: $showResetPasswordAlert) {
-			TextField("Enter your email", text: $resetPasswordEmail)
-				.autocapitalization(.none)
-				.keyboardType(.emailAddress)
-			
-			Button("Cancel", role: .cancel) {}
-			
-			Button("Reset") {
-				Task {
-					await authViewModel.sendPasswordReset(email: resetPasswordEmail)
-					showPasswordResetConfirmation = true
-				}
-			}
-		} message: {
-			Text("Enter your email address and we'll send you a link to reset your password.")
-		}
-		.alert("Password Reset Email Sent", isPresented: $showPasswordResetConfirmation) {
-			Button("OK", role: .cancel) {}
-		} message: {
-			Text("Check your email for a link to reset your password.")
-		}
-		.onTapGesture {
-			hideKeyboard()
-		}
-	}
-	
-	// Helper methods
-	private func signIn() {
-		Task {
-			await authViewModel.login(with: .emailAndPassword(
-				email: email,
-				password: password
-			))
-		}
-	}
-	
-	private func signUp() {
-		Task {
-			do {
-				try await authViewModel.signUp(
-					email: email,
-					password: password
-				)
-			} catch {
-				// Error handling is already done in the ViewModel
-			}
-		}
-	}
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var showResetPasswordAlert: Bool = false
+    @State private var resetPasswordEmail: String = ""
+    @State private var showPasswordResetConfirmation: Bool = false
+    @FocusState private var emailIsFocused: Bool
+    @FocusState private var passwordIsFocused: Bool
+    @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @State private var showSignUpForm: Bool = false
+    @State private var isSigningUp: Bool = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                // Main Layout
+                HStack(spacing: 0) {
+                    // Left Sidebar (dimmed when signup form is shown)
+                    VStack(spacing: 0) {
+                        Spacer()
+
+                        // Logo and Title (smaller for sidebar)
+                        VStack(spacing: 5) {
+                            Image("MarkBookIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 100)
+
+                            Text("Sign In")
+                                .foregroundColor(.Orange)
+                                .font(.system(size: 24))
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.bottom, 30)
+
+                        // Form Fields
+                        VStack(spacing: 0) {
+                            TextField("Email Address", text: $email)
+                                .withLoginStyles()
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .submitLabel(.next)
+                                .focused($emailIsFocused)
+                                .onSubmit {
+                                    emailIsFocused = false
+                                    passwordIsFocused = true
+                                }
+
+                            SecureField("Password", text: $password)
+                                .withSecureFieldStyles()
+                                .submitLabel(.go)
+                                .focused($passwordIsFocused)
+                                .onSubmit {
+                                    signIn()
+                                }
+
+                            // Forgot Password Link
+                            HStack {
+                                Spacer()
+                                Button {
+                                    showResetPasswordAlert = true
+                                } label: {
+                                    Text("Forgot Password?")
+                                        .foregroundColor(.Orange)
+                                        .font(.footnote)
+                                }
+                            }
+                            .padding(.bottom, 20)
+
+                            // Error Display
+                            if let error = authViewModel.error {
+                                Text(error.localizedDescription)
+                                    .font(.footnote)
+                                    .foregroundColor(.red)
+                                    .padding(.bottom, 12)
+                                    .transition(.opacity)
+                            }
+
+                            // Sign In Button
+                            Button(action: signIn) {
+                                if authViewModel.isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Text("Sign In")
+                                        .foregroundColor(.white)
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.Orange)
+                                        .cornerRadius(10)
+                                }
+                            }
+                            .disabled(email.isEmpty || password.isEmpty || authViewModel.isLoading)
+                            .padding(.bottom, 15)
+
+                            // Updated Sign Up Button
+                            Button(action: {
+                                print("🔘 Sign Up button tapped!")
+                                showSignUpForm = true
+                            }) {
+                                Text("Sign Up")
+                                    .foregroundColor(.white)
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.Orange)
+                                    .cornerRadius(10)
+                            }
+                            // No .disabled() - we always want users to access the signup form
+                        }
+                        .padding(.horizontal, 20)
+
+                        // OR Divider (smaller)
+                        HStack {
+                            VStack { Divider() }
+                            Text("OR")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 8)
+                            VStack { Divider() }
+                        }
+                        .padding(.vertical, 20)
+                        .padding(.horizontal, 20)
+
+                        // Social Login Options (compact)
+                        VStack(spacing: 10) {
+                            SocialLogins()
+                        }
+                        .padding(.horizontal, 20)
+
+                        Spacer()
+                    }
+                    .frame(width: geometry.size.width * 0.4)
+                    .background(Color.gray.opacity(0.05))
+                    .opacity(showSignUpForm ? 0.3 : 1.0) // Dim sidebar when signup form is shown
+                    .disabled(showSignUpForm) // Disable sidebar interaction
+                    .animation(.easeInOut(duration: 0.3), value: showSignUpForm)
+
+                    // Right Side - Welcome Content OR Signup Form
+                    Group {
+                        if showSignUpForm {
+                            TeacherSignUpFormView(
+                                isSigningUp: $isSigningUp,
+                                onCancel: {
+                                    showSignUpForm = false
+                                },
+                                onSignUp: { teacherProfile in
+                                    performSignUp(teacherProfile: teacherProfile)
+                                }
+                            )
+                        } else {
+                            WelcomeContentView()
+                        }
+                    }
+                    .frame(width: geometry.size.width * 0.6)
+                    .animation(.easeInOut(duration: 0.3), value: showSignUpForm)
+                }
+            }
+            // Keep all your existing alert modifiers here...
+        }
+    }
+
+    // Helper methods
+    private func signIn() {
+        Task {
+            await authViewModel.login(with: .emailAndPassword(
+                email: email,
+                password: password
+            ))
+        }
+    }
+
+    private func performSignUp(teacherProfile: TeacherSignUpData) {
+        isSigningUp = true
+
+        Task {
+            do {
+                // Create the teacher profile for Firebase
+                let profile = TeacherProfile(
+                    email: teacherProfile.email,
+                    fullName: teacherProfile.fullName,
+                    schoolName: teacherProfile.schoolName,
+                    department: teacherProfile.department,
+                    gradeLevel: teacherProfile.gradeLevel
+                )
+
+                try await authViewModel.signUp(
+                    email: teacherProfile.email,
+                    password: teacherProfile.password,
+//                    teacherProfile: profile
+                )
+
+                // Success - the user will be automatically logged in
+                showSignUpForm = false
+            } catch {
+                // Error handling is already done in the ViewModel
+            }
+
+            isSigningUp = false
+        }
+    }
+}
+
+// Helper View for Feature Items
+struct FeatureItem: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 15) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundColor(.Orange)
+                .frame(width: 25)
+
+            Text(text)
+                .font(.body)
+                .foregroundColor(.primary)
+
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Teacher Sign Up Form
+struct TeacherSignUpFormView: View {
+    @Binding var isSigningUp: Bool
+    let onCancel: () -> Void
+    let onSignUp: (TeacherSignUpData) -> Void
+
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var confirmPassword: String = ""
+    @State private var fullName: String = ""
+    @State private var schoolName: String = ""
+    @State private var gradeLevel: String = ""
+    @State private var department: String = ""
+
+    let gradeLevels = ["Foundation", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Other"]
+
+    var isFormValid: Bool {
+        !email.isEmpty &&
+        !password.isEmpty &&
+        !confirmPassword.isEmpty &&
+        !fullName.isEmpty &&
+        !schoolName.isEmpty &&
+        !gradeLevel.isEmpty &&
+        password == confirmPassword &&
+        password.count >= 6 &&
+        email.contains("@")
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                // Header
+                VStack(spacing: 16) {
+                    Image(systemName: "person.badge.plus")
+                        .font(.system(size: 60))
+                        .foregroundColor(.Orange)
+
+                    Text("Create Teacher Account")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+
+                    Text("Join MyMarkBook and start managing your assessments")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
+                // Form
+                VStack(spacing: 20) {
+                    // Account Information
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Account Information")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+
+                        TextField("Email Address", text: $email)
+                            .withLoginStyles()
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+
+                        SecureField("Password (min 6 characters)", text: $password)
+                            .withSecureFieldStyles()
+
+                        SecureField("Confirm Password", text: $confirmPassword)
+                            .withSecureFieldStyles()
+
+                        if !password.isEmpty && !confirmPassword.isEmpty && password != confirmPassword {
+                            Text("Passwords do not match")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
+
+                    // Teacher Information
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("Teacher Information")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+
+                        TextField("Full Name", text: $fullName)
+                            .withLoginStyles()
+
+                        TextField("School Name", text: $schoolName)
+                            .withLoginStyles()
+
+                        // Grade Level Picker
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Grade Level")
+                                .font(.headline)
+
+                            Menu {
+                                ForEach(gradeLevels, id: \.self) { grade in
+                                    Button(grade) {
+                                        gradeLevel = grade
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(gradeLevel.isEmpty ? "Select grade level" : gradeLevel)
+                                        .foregroundColor(gradeLevel.isEmpty ? .secondary : .primary)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                            }
+                        }
+
+                        TextField("Department (Optional)", text: $department)
+                            .withLoginStyles()
+                    }
+                }
+
+                // Buttons
+                HStack(spacing: 16) {
+                    Button("Cancel") {
+                        onCancel()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+
+                    Button(action: {
+                        let teacherData = TeacherSignUpData(
+                            email: email,
+                            password: password,
+                            fullName: fullName,
+                            schoolName: schoolName,
+                            gradeLevel: gradeLevel,
+                            department: department.isEmpty ? nil : department
+                        )
+                        onSignUp(teacherData)
+                    }) {
+                        if isSigningUp {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Text("Create Account")
+                                .foregroundColor(.white)
+                                .fontWeight(.semibold)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(isFormValid ? Color.Orange : Color.gray)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .disabled(!isFormValid || isSigningUp)
+                }
+            }
+            .padding(.horizontal, 40)
+            .padding(.vertical, 30)
+        }
+    }
+}
+
+// MARK: - Welcome Content View
+struct WelcomeContentView: View {
+    var body: some View {
+        VStack(spacing: 30) {
+            Spacer()
+
+            // MyMarkBook Branding
+            VStack(spacing: 20) {
+                Image(systemName: "book.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.Orange)
+
+                Text("Welcome to MyMarkBook")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+
+                Text("Digital Assessment Made Simple")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            // Feature Highlights
+            VStack(spacing: 20) {
+                Text("Sign in to access:")
+                    .font(.headline)
+                    .foregroundColor(.Orange)
+
+                VStack(alignment: .leading, spacing: 15) {
+                    FeatureItem(icon: "camera.fill", text: "Capture student work with photos")
+                    FeatureItem(icon: "qrcode", text: "Automatic QR code assignment")
+                    FeatureItem(icon: "chart.line.uptrend.xyaxis", text: "Track student progress over time")
+                    FeatureItem(icon: "cloud.fill", text: "Secure cloud storage")
+                    FeatureItem(icon: "person.3.fill", text: "Manage multiple classrooms")
+                }
+            }
+            .padding(.horizontal, 40)
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Teacher Sign Up Data Model
+struct TeacherSignUpData {
+    let email: String
+    let password: String
+    let fullName: String
+    let schoolName: String
+    let gradeLevel: String
+    let department: String?
 }
 
 struct Login_Previews: PreviewProvider {
-	static var previews: some View {
-		Login()
-			.environmentObject(AuthenticationViewModel(
-				authRepository: FirebaseAuthRepository()
-			))
-	}
+    static var previews: some View {
+        Login()
+            .environmentObject(AuthenticationViewModel(
+                authRepository: FirebaseAuthRepository()
+            ))
+    }
 }

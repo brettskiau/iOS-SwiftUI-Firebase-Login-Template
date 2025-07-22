@@ -59,27 +59,75 @@ struct SignUpFormView: View {
                 TextField("First", text: $teacherProfile.firstName)
                     .textContentType(.givenName)
                     .styledTextField()
+                    .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Button("Previous") { /* focus previous field */ }
+                                Button("Next") { /* focus next field */ }
+                                Spacer()
+                                Button("Done") { /* dismiss keyboard */ }
+                            }
+                        }
 
                 TextField("Last", text: $teacherProfile.lastName)
                     .textContentType(.familyName)
                     .styledTextField()
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Button("Previous") { /* focus previous field */ }
+                            Button("Next") { /* focus next field */ }
+                            Spacer()
+                            Button("Done") { /* dismiss keyboard */ }
+                        }
+                    }
             }
 
             TextField("E-Mail", text: $teacherProfile.email)
                 .textContentType(.emailAddress)
                 .styledTextField()
+                .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Button("Previous") { /* focus previous field */ }
+                            Button("Next") { /* focus next field */ }
+                            Spacer()
+                            Button("Done") { /* dismiss keyboard */ }
+                        }
+                    }
 
             HStack(spacing: 12) {
                 SecureField("Password", text: $teacherProfile.password)
                     .textContentType(.newPassword)
                     .styledTextField()
+                    .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Button("Previous") { /* focus previous field */ }
+                                Button("Next") { /* focus next field */ }
+                                Spacer()
+                                Button("Done") { /* dismiss keyboard */ }
+                            }
+                        }
                 SecureField("Confirm", text: $teacherProfile.confirmPassword)
                     .textContentType(.newPassword)
                     .styledTextField()
+                    .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Button("Previous") { /* focus previous field */ }
+                                Button("Next") { /* focus next field */ }
+                                Spacer()
+                                Button("Done") { /* dismiss keyboard */ }
+                            }
+                        }
             }
 
             TextField("School", text: $teacherProfile.schoolName)
                 .styledTextField()
+                .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Button("Previous") { /* focus previous field */ }
+                            Button("Next") { /* focus next field */ }
+                            Spacer()
+                            Button("Done") { /* dismiss keyboard */ }
+                        }
+                    }
 
             // Grade and Subject Pickers
             HStack(spacing: 12) {
@@ -91,6 +139,14 @@ struct SignUpFormView: View {
                     }
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
+                    .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Button("Previous") { /* focus previous field */ }
+                                Button("Next") { /* focus next field */ }
+                                Spacer()
+                                Button("Done") { /* dismiss keyboard */ }
+                            }
+                        }
                 }
 
                 Button(action: { showSubjectPicker.toggle() }) {
@@ -101,6 +157,13 @@ struct SignUpFormView: View {
                     }
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
+                    .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Button("Previous") { /* focus previous field */ }
+                                Spacer()
+                                Button("Done") { /* dismiss keyboard */ }
+                            }
+                        }
                 }
             }
 

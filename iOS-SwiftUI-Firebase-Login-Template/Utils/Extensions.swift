@@ -1,7 +1,3 @@
-//
-//  Extensions.swift
-//
-//
 
 import SwiftUI
 import CryptoKit

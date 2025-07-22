@@ -5,23 +5,34 @@
 
 import SwiftUI
 import AuthenticationServices
+import FirebaseCore
+import Firebase
+import FirebaseFirestore
 
 struct TeacherProfile: Identifiable, Codable {
     var id: String?
     let email: String
     let fullName: String
+    let firstName: String
+    let lastName: String
     let schoolName: String
-    let department: String?
-    let gradeLevel: String
+    let department: String?  // areaOfTeaching
+    let gradeLevel: String   // joined gradeLevels array
+    let gradeLevels: [String] // keep the array too
+    let title: String        // Mr, Mrs, etc.
     let createdAt: Date
     let isActive: Bool
 
-    init(email: String, fullName: String, schoolName: String, department: String? = nil, gradeLevel: String) {
+    init(email: String, firstName: String, lastName: String, schoolName: String, department: String? = nil, gradeLevel: String, gradeLevels: [String], title: String = "Mr") {
         self.email = email
-        self.fullName = fullName
+        self.firstName = firstName
+        self.lastName = lastName
+        self.fullName = "\(firstName) \(lastName)"
         self.schoolName = schoolName
         self.department = department
         self.gradeLevel = gradeLevel
+        self.gradeLevels = gradeLevels
+        self.title = title
         self.createdAt = Date()
         self.isActive = true
     }
@@ -232,31 +243,72 @@ struct Login: View {
     }
 
     private func performSignUp(teacherProfile: TeacherSignUpData) {
+        print("🚀 Starting signup process...")
+            print("📧 Email: \(teacherProfile.email)")
+            print("👤 Name: \(teacherProfile.firstName) \(teacherProfile.lastName)")
+
         isSigningUp = true
 
         Task {
             do {
-                let profile = TeacherProfile(
-                    email: teacherProfile.email,
-                    fullName: "\(teacherProfile.firstName) \(teacherProfile.lastName)",
-                    schoolName: teacherProfile.schoolName,
-                    department: teacherProfile.areaOfTeaching,
-                    gradeLevel: teacherProfile.gradeLevels.joined(separator: ", ")
-                )
-
+                print("🔐 Creating Firebase Auth account...")
+                // Step 1: Create Firebase Auth account
                 try await authViewModel.signUp(
                     email: teacherProfile.email,
                     password: teacherProfile.password
-                    // Optionally pass `profile` if you're storing it too
+                )
+                print("✅ Firebase Auth account created successfully!")
+                            print("🆔 User ID: \(authViewModel.currentUser?.uid ?? "NO UID")")
+
+                // Step 2: Save teacher profile to Firestore
+                let profile = TeacherProfile(
+                    email: teacherProfile.email,
+                    firstName: teacherProfile.firstName,        // Fixed: use firstName
+                    lastName: teacherProfile.lastName,          // Fixed: use lastName
+                    schoolName: teacherProfile.schoolName,
+                    department: teacherProfile.areaOfTeaching,
+                    gradeLevel: teacherProfile.gradeLevels.joined(separator: ", "),
+                    gradeLevels: teacherProfile.gradeLevels,    // Fixed: add gradeLevels array
+//                    title: selectedTitle                        // You'll need to pass this
                 )
 
-                showSignUpForm = false
+                print("💾 Attempting to save teacher profile to Firestore...")
+                            // Save to the "teachers" collection
+                            try await saveTeacherProfile(profile)
+
+                            print("✅ Teacher account created and profile saved!")
+                            showSignUpForm = false
+
             } catch {
-                // Handle error (already done in ViewModel)
+                print("❌ Signup error: \(error)")
             }
 
             isSigningUp = false
         }
+    }
+
+
+    // Add this function to save the profile
+    private func saveTeacherProfile(_ profile: TeacherProfile) async throws {
+        print("💾 saveTeacherProfile called...")
+
+        guard let userId = authViewModel.currentUser?.uid else {
+            print("❌ No authenticated user found!")
+            throw NSError(domain: "NoUser", code: 0, userInfo: [NSLocalizedDescriptionKey: "No authenticated user"])
+        }
+
+        print("🆔 Saving profile for user ID: \(userId)")
+
+        let db = Firestore.firestore()
+        var profileWithId = profile
+        profileWithId.id = userId
+
+        print("🗄️ Firestore reference created, attempting to save...")
+
+        // Save to "teachers" collection with document ID = user's Firebase Auth UID
+        try db.collection("teachers").document(userId).setData(from: profileWithId)
+
+        print("✅ Teacher profile saved to Firestore: teachers/\(userId)")
     }
 
 }
@@ -283,178 +335,218 @@ struct FeatureItem: View {
 }
 
 // MARK: - Teacher Sign Up Form
-struct TeacherSignUpFormView: View {
-    @Binding var isSigningUp: Bool
-    let onCancel: () -> Void
-    let onSignUp: (TeacherSignUpData) -> Void
-
-    @State private var email: String = ""
-    @State private var password: String = ""
-    @State private var confirmPassword: String = ""
-    @State private var firstName: String = ""
-    @State private var lastName: String = ""
-    @State private var schoolName: String = ""
-    @State private var gradeLevel: String = ""
-    @State private var department: String = ""
-
-    let gradeLevels = ["Foundation", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Other"]
-
-    var isFormValid: Bool {
-        !firstName.isEmpty &&
-        !lastName.isEmpty &&
-        !email.isEmpty &&
-        !password.isEmpty &&
-        !confirmPassword.isEmpty &&
-        !schoolName.isEmpty &&
-        !gradeLevel.isEmpty &&
-        password == confirmPassword &&
-        password.count >= 6 &&
-        email.contains("@")
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                // Header
-                VStack(spacing: 16) {
-                    Image(systemName: "person.badge.plus")
-                        .font(.system(size: 60))
-                        .foregroundColor(.Orange)
-
-                    Text("Create Teacher Account")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                    Text("Join MyMarkBook and start managing your assessments")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-
-                // Form
-                VStack(spacing: 20) {
-                    // Account Information
-                    VStack(alignment: .leading, spacing: 15) {
-                        Text("Account Information")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-
-                        TextField("Email Address", text: $email)
-                            .withLoginStyles()
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-
-                        SecureField("Password (min 6 characters)", text: $password)
-                            .withSecureFieldStyles()
-
-                        SecureField("Confirm Password", text: $confirmPassword)
-                            .withSecureFieldStyles()
-
-                        if !password.isEmpty && !confirmPassword.isEmpty && password != confirmPassword {
-                            Text("Passwords do not match")
-                                .font(.caption)
-                                .foregroundColor(.red)
-                        }
-                    }
-
-                    // Teacher Information
-                    VStack(alignment: .leading, spacing: 15) {
-                        Text("Teacher Information")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-
-                        HStack(spacing: 16) {
-                            TextField("First Name", text: $firstName)
-                                .withLoginStyles()
-
-                            TextField("Last Name", text: $lastName)
-                                .withLoginStyles()
-                        }
-
-
-                        TextField("School Name", text: $schoolName)
-                            .withLoginStyles()
-
-                        // Grade Level Picker
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Grade Level")
-                                .font(.headline)
-
-                            Menu {
-                                ForEach(gradeLevels, id: \.self) { grade in
-                                    Button(grade) {
-                                        gradeLevel = grade
-                                    }
-                                }
-                            } label: {
-                                HStack {
-                                    Text(gradeLevel.isEmpty ? "Select grade level" : gradeLevel)
-                                        .foregroundColor(gradeLevel.isEmpty ? .secondary : .primary)
-                                    Spacer()
-                                    Image(systemName: "chevron.down")
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
-                            }
-                        }
-
-                        TextField("Department (Optional)", text: $department)
-                            .withLoginStyles()
-                    }
-                }
-
-                // Buttons
-                HStack(spacing: 16) {
-                    Button("Cancel") {
-                        onCancel()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.primary)
-                    .cornerRadius(10)
-
-                    Button(action: {
-                        let teacherData = TeacherSignUpData(
-                            firstName: firstName,
-                            lastName: lastName,
-                            schoolName: schoolName,
-                            areaOfTeaching: department, // or a new areaOfTeaching variable if available
-                            gradeLevels: [gradeLevel],  // wrap string in array or use multi-select array
-                            email: email,
-                            password: password,
-                            confirmPassword: confirmPassword
-                        )
-                        onSignUp(teacherData)
-                    }) {
-                        if isSigningUp {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Text("Create Account")
-                                .foregroundColor(.white)
-                                .fontWeight(.semibold)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isFormValid ? Color.Orange : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .disabled(!isFormValid || isSigningUp)
-                }
-            }
-            .padding(.horizontal, 40)
-            .padding(.vertical, 30)
-        }
-    }
-}
+//struct TeacherSignUpFormView: View {
+//    @Binding var isSigningUp: Bool
+//    let onCancel: () -> Void
+//    let onSignUp: (TeacherSignUpData) -> Void
+//
+//    @State private var email: String = ""
+//    @State private var password: String = ""
+//    @State private var confirmPassword: String = ""
+//    @State private var firstName: String = ""
+//    @State private var lastName: String = ""
+//    @State private var schoolName: String = ""
+//    @State private var gradeLevel: String = ""
+//    @State private var department: String = ""
+//
+//    let gradeLevels = ["Foundation", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Other"]
+//
+//    var isFormValid: Bool {
+//        !firstName.isEmpty &&
+//        !lastName.isEmpty &&
+//        !email.isEmpty &&
+//        !password.isEmpty &&
+//        !confirmPassword.isEmpty &&
+//        !schoolName.isEmpty &&
+//        !gradeLevel.isEmpty &&
+//        password == confirmPassword &&
+//        password.count >= 6 &&
+//        email.contains("@")
+//    }
+//
+//    var body: some View {
+//        ScrollView {
+//            VStack(spacing: 30) {
+//                // Header
+//                VStack(spacing: 16) {
+//                    Image(systemName: "person.badge.plus")
+//                        .font(.system(size: 60))
+//                        .foregroundColor(.Orange)
+//
+//                    Text("Create Teacher Account")
+//                        .font(.largeTitle)
+//                        .fontWeight(.bold)
+//
+//                    Text("Join MyMarkBook and start managing your assessments")
+//                        .font(.subheadline)
+//                        .foregroundColor(.secondary)
+//                        .multilineTextAlignment(.center)
+//                }
+//
+//                // Form
+//                VStack(spacing: 20) {
+//                    // Account Information
+//                    VStack(alignment: .leading, spacing: 15) {
+//                        Text("Account Information")
+//                            .font(.title3)
+//                            .fontWeight(.semibold)
+//
+//                        TextField("Email Address", text: $email)
+//                            .withLoginStyles()
+//                            .keyboardType(.emailAddress)
+//                            .autocapitalization(.none)
+//
+//                        SecureField("Password (min 6 characters)", text: $password)
+//                            .withSecureFieldStyles()
+//
+//                        SecureField("Confirm Password", text: $confirmPassword)
+//                            .withSecureFieldStyles()
+//
+//                        if !password.isEmpty && !confirmPassword.isEmpty && password != confirmPassword {
+//                            Text("Passwords do not match")
+//                                .font(.caption)
+//                                .foregroundColor(.red)
+//                        }
+//                    }
+//
+//                    // Teacher Information
+//                    VStack(alignment: .leading, spacing: 15) {
+//                        Text("Teacher Information")
+//                            .font(.title3)
+//                            .fontWeight(.semibold)
+//
+//                        HStack(spacing: 16) {
+//                            TextField("First Name", text: $firstName)
+//                                .withLoginStyles()
+//                                .toolbar {
+//                                        ToolbarItemGroup(placement: .keyboard) {
+//                                            Button("Previous") { /* focus previous field */ }
+//                                            Button("Next") { /* focus next field */ }
+//                                            Spacer()
+//                                            Button("Done") { /* dismiss keyboard */ }
+//                                        }
+//                                    }
+//
+//                            TextField("Last Name", text: $lastName)
+//                                .withLoginStyles()
+//                                .toolbar {
+//                                        ToolbarItemGroup(placement: .keyboard) {
+//                                            Button("Previous") { /* focus previous field */ }
+//                                            Button("Next") { /* focus next field */ }
+//                                            Spacer()
+//                                            Button("Done") { /* dismiss keyboard */ }
+//                                        }
+//                                    }
+//                        }
+//
+//
+//                        TextField("School Name", text: $schoolName)
+//                            .withLoginStyles()
+//                            .toolbar {
+//                                    ToolbarItemGroup(placement: .keyboard) {
+//                                        Button("Previous") { /* focus previous field */ }
+//                                        Button("Next") { /* focus next field */ }
+//                                        Spacer()
+//                                        Button("Done") { /* dismiss keyboard */ }
+//                                    }
+//                                }
+//
+//                        // Grade Level Picker
+//                        VStack(alignment: .leading, spacing: 8) {
+//                            Text("Grade Level")
+//                                .font(.headline)
+//                                .toolbar {
+//                                        ToolbarItemGroup(placement: .keyboard) {
+//                                            Button("Previous") { /* focus previous field */ }
+//                                            Button("Next") { /* focus next field */ }
+//                                            Spacer()
+//                                            Button("Done") { /* dismiss keyboard */ }
+//                                        }
+//                                    }
+//
+//                            Menu {
+//                                ForEach(gradeLevels, id: \.self) { grade in
+//                                    Button(grade) {
+//                                        gradeLevel = grade
+//                                    }
+//                                }
+//                            } label: {
+//                                HStack {
+//                                    Text(gradeLevel.isEmpty ? "Select grade level" : gradeLevel)
+//                                        .foregroundColor(gradeLevel.isEmpty ? .secondary : .primary)
+//                                    Spacer()
+//                                    Image(systemName: "chevron.down")
+//                                        .foregroundColor(.secondary)
+//                                }
+//                                .padding()
+//                                .background(Color.gray.opacity(0.1))
+//                                .cornerRadius(8)
+//                                .overlay(
+//                                    RoundedRectangle(cornerRadius: 8)
+//                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+//                                )
+//                            }
+//                        }
+//
+//                        TextField("Department (Optional)", text: $department)
+//                            .withLoginStyles()
+//                            .toolbar {
+//                                    ToolbarItemGroup(placement: .keyboard) {
+//                                        Button("Previous") { /* focus previous field */ }
+////                                        Button("Next") { /* focus next field */ }
+//                                        Spacer()
+//                                        Button("Done") { /* dismiss keyboard */ }
+//                                    }
+//                                }
+//                    }
+//                }
+//
+//                // Buttons
+//                HStack(spacing: 16) {
+//                    Button("Cancel") {
+//                        onCancel()
+//                    }
+//                    .frame(maxWidth: .infinity)
+//                    .padding()
+//                    .background(Color.gray.opacity(0.2))
+//                    .foregroundColor(.primary)
+//                    .cornerRadius(10)
+//
+//                    Button(action: {
+//                        let teacherData = TeacherSignUpData(
+//                            firstName: firstName,
+//                            lastName: lastName,
+//                            schoolName: schoolName,
+//                            areaOfTeaching: department, // or a new areaOfTeaching variable if available
+//                            gradeLevels: [gradeLevel],  // wrap string in array or use multi-select array
+//                            email: email,
+//                            password: password,
+//                            confirmPassword: confirmPassword
+//                        )
+//                        onSignUp(teacherData)
+//                    }) {
+//                        if isSigningUp {
+//                            ProgressView()
+//                                .tint(.white)
+//                        } else {
+//                            Text("Create Account")
+//                                .foregroundColor(.white)
+//                                .fontWeight(.semibold)
+//                        }
+//                    }
+//                    .frame(maxWidth: .infinity)
+//                    .padding()
+//                    .background(isFormValid ? Color.Orange : Color.gray)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(10)
+//                    .disabled(!isFormValid || isSigningUp)
+//                }
+//            }
+//            .padding(.horizontal, 40)
+//            .padding(.vertical, 30)
+//        }
+//    }
+//}
 
 // MARK: - Welcome Content View
 struct WelcomeContentView: View {

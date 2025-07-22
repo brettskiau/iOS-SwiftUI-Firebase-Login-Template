@@ -1,8 +1,4 @@
-//
-//  ContentView.swift
-//  iOS-SwiftUI-Firebase-Login-Template
-//
-//  Created by Tanner Maasen on 2/11/23.
+
 //
 
 import SwiftUI
@@ -177,7 +173,7 @@ struct AuthenticatedSidebarView: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(.Orange)
                         )
-
+// Start of SidebarView below
                     VStack(alignment: .leading, spacing: 4) {
                         Text(userName)
                             .font(.headline)

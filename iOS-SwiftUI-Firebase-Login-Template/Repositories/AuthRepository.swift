@@ -1,8 +1,4 @@
-//
-//  AuthRepository.swift
-//  iOS-SwiftUI-Firebase-Login-Template
-//
-//  Created by Tanner Maasen on 3/7/25.
+
 //
 
 import FirebaseAuth

@@ -477,31 +477,16 @@ struct WelcomeContentView: View {
                     .font(.title2)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
+                Image("MarkbookText")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 180) // adjust as needed
+                    .padding(.horizontal)
             }
 
-            // Feature Highlights
-            VStack(spacing: 20) {
-                Text("Sign in to access:")
-                    .font(.headline)
-                    .foregroundColor(.Orange)
-                HStack{
 
-                        VStack(alignment: .leading, spacing: 15) {
-                            FeatureItem(icon: "camera.fill", text: "Capture student work with photos")
-                            FeatureItem(icon: "qrcode", text: "Automatic QR code assignment")
-                        }
-                    VStack(alignment: .leading, spacing: 25){
-                            FeatureItem(icon: "chart.line.uptrend.xyaxis", text: "Track student progress over time")
-                            FeatureItem(icon: "cloud.fill", text: "Secure cloud storage")
-                        }
-
-                }
-                .padding(.horizontal, 80)
-                HStack (alignment: .center, spacing: 0){
-                        FeatureItem(icon: "person.3.fill", text: "Manage multiple classrooms")
-                    }
-            }
             Spacer()
+
         }
         .padding(.horizontal, 20)
     }

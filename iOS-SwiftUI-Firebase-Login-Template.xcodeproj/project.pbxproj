@@ -83,7 +83,6 @@
 		1410E3AC2997811B005E4FBF = {
 			isa = PBXGroup;
 			children = (
-				FCAB88362E2F129B00378CBF /* SignUpFormView.swift */,
 				14F252F0299C133600DAC3B8 /* .gitignore */,
 				1410E3B72997811B005E4FBF /* iOS-SwiftUI-Firebase-Login-Template */,
 				1410E3B62997811B005E4FBF /* Products */,
@@ -131,6 +130,7 @@
 			children = (
 				1410E3D2299781F3005E4FBF /* Home.swift */,
 				1410E3D0299781E0005E4FBF /* Login.swift */,
+				FCAB88362E2F129B00378CBF /* SignUpFormView.swift */,
 				1410E3D42997833E005E4FBF /* Components */,
 			);
 			path = Views;

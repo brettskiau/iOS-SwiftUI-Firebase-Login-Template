@@ -10,6 +10,17 @@ public extension Color {
     static let Orange = Color("Orange")
 }
 
+extension View {
+    func styledTextField() -> some View {
+        self
+            .padding(.horizontal)
+            .frame(height: 50)
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
+    }
+}
+
+
 public extension TextField {
     func withLoginStyles() -> some View {
         self.padding()

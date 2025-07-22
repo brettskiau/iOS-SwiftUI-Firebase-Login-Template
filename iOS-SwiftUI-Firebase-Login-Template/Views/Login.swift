@@ -27,6 +27,22 @@ struct TeacherProfile: Identifiable, Codable {
     }
 }
 
+
+struct GradientBackground: View {
+    var body: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Color(red: 0.05, green: 0.02, blue: 0.08), // almost black
+                Color(red: 0.08, green: 0.00, blue: 0.20), // dark purple hint
+                Color(red: 0.12, green: 0.00, blue: 0.25)  // subtle top-right lift
+            ]),
+            startPoint: .bottomLeading,
+            endPoint: .topTrailing
+        )
+        .ignoresSafeArea()
+    }
+}
+
 struct Login: View {
     @State private var email: String = ""
     @State private var password: String = ""
@@ -38,6 +54,17 @@ struct Login: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @State private var showSignUpForm: Bool = false
     @State private var isSigningUp: Bool = false
+    @State private var teacherProfile = TeacherSignUpData(
+        firstName: "",
+        lastName: "",
+        schoolName: "",
+        areaOfTeaching: "",
+        gradeLevels: [],
+        email: "",
+        password: "",
+        confirmPassword: ""
+    )
+
 
     var body: some View {
         GeometryReader { geometry in
@@ -53,7 +80,7 @@ struct Login: View {
                             Image("MarkBookIcon")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 100, height: 100)
+                                .frame(width: 140, height: 140)
 
                             Text("Sign In")
                                 .foregroundColor(.Orange)
@@ -120,6 +147,7 @@ struct Login: View {
                                         .cornerRadius(10)
                                 }
                             }
+                            .frame(maxWidth: 180)
                             .disabled(email.isEmpty || password.isEmpty || authViewModel.isLoading)
                             .padding(.bottom, 15)
 
@@ -129,6 +157,7 @@ struct Login: View {
                                 showSignUpForm = true
                             }) {
                                 Text("Sign Up")
+                                    .frame(maxWidth: 250)
                                     .foregroundColor(.white)
                                     .font(.headline)
                                     .frame(maxWidth: .infinity)
@@ -136,7 +165,7 @@ struct Login: View {
                                     .background(Color.Orange)
                                     .cornerRadius(10)
                             }
-                            // No .disabled() - we always want users to access the signup form
+                            .frame(maxWidth: 180)
                         }
                         .padding(.horizontal, 20)
 
@@ -145,7 +174,7 @@ struct Login: View {
                             VStack { Divider() }
                             Text("OR")
                                 .font(.footnote)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.orange)
                                 .padding(.horizontal, 8)
                             VStack { Divider() }
                         }
@@ -161,7 +190,8 @@ struct Login: View {
                         Spacer()
                     }
                     .frame(width: geometry.size.width * 0.4)
-                    .background(Color.gray.opacity(0.05))
+                    .background(GradientBackground())
+//                    .background(Color.gray.opacity(0.05))
                     .opacity(showSignUpForm ? 0.3 : 1.0) // Dim sidebar when signup form is shown
                     .disabled(showSignUpForm) // Disable sidebar interaction
                     .animation(.easeInOut(duration: 0.3), value: showSignUpForm)
@@ -169,13 +199,14 @@ struct Login: View {
                     // Right Side - Welcome Content OR Signup Form
                     Group {
                         if showSignUpForm {
-                            TeacherSignUpFormView(
+                            SignUpFormView(
+                                teacherProfile: $teacherProfile,
                                 isSigningUp: $isSigningUp,
+                                onSubmit: {
+                                    performSignUp(teacherProfile: teacherProfile)
+                                },
                                 onCancel: {
                                     showSignUpForm = false
-                                },
-                                onSignUp: { teacherProfile in
-                                    performSignUp(teacherProfile: teacherProfile)
                                 }
                             )
                         } else {
@@ -205,30 +236,29 @@ struct Login: View {
 
         Task {
             do {
-                // Create the teacher profile for Firebase
                 let profile = TeacherProfile(
                     email: teacherProfile.email,
-                    fullName: teacherProfile.fullName,
+                    fullName: "\(teacherProfile.firstName) \(teacherProfile.lastName)",
                     schoolName: teacherProfile.schoolName,
-                    department: teacherProfile.department,
-                    gradeLevel: teacherProfile.gradeLevel
+                    department: teacherProfile.areaOfTeaching,
+                    gradeLevel: teacherProfile.gradeLevels.joined(separator: ", ")
                 )
 
                 try await authViewModel.signUp(
                     email: teacherProfile.email,
-                    password: teacherProfile.password,
-//                    teacherProfile: profile
+                    password: teacherProfile.password
+                    // Optionally pass `profile` if you're storing it too
                 )
 
-                // Success - the user will be automatically logged in
                 showSignUpForm = false
             } catch {
-                // Error handling is already done in the ViewModel
+                // Handle error (already done in ViewModel)
             }
 
             isSigningUp = false
         }
     }
+
 }
 
 // Helper View for Feature Items
@@ -261,7 +291,8 @@ struct TeacherSignUpFormView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
-    @State private var fullName: String = ""
+    @State private var firstName: String = ""
+    @State private var lastName: String = ""
     @State private var schoolName: String = ""
     @State private var gradeLevel: String = ""
     @State private var department: String = ""
@@ -269,10 +300,11 @@ struct TeacherSignUpFormView: View {
     let gradeLevels = ["Foundation", "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Other"]
 
     var isFormValid: Bool {
+        !firstName.isEmpty &&
+        !lastName.isEmpty &&
         !email.isEmpty &&
         !password.isEmpty &&
         !confirmPassword.isEmpty &&
-        !fullName.isEmpty &&
         !schoolName.isEmpty &&
         !gradeLevel.isEmpty &&
         password == confirmPassword &&
@@ -331,8 +363,14 @@ struct TeacherSignUpFormView: View {
                             .font(.title3)
                             .fontWeight(.semibold)
 
-                        TextField("Full Name", text: $fullName)
-                            .withLoginStyles()
+                        HStack(spacing: 16) {
+                            TextField("First Name", text: $firstName)
+                                .withLoginStyles()
+
+                            TextField("Last Name", text: $lastName)
+                                .withLoginStyles()
+                        }
+
 
                         TextField("School Name", text: $schoolName)
                             .withLoginStyles()
@@ -384,12 +422,14 @@ struct TeacherSignUpFormView: View {
 
                     Button(action: {
                         let teacherData = TeacherSignUpData(
+                            firstName: firstName,
+                            lastName: lastName,
+                            schoolName: schoolName,
+                            areaOfTeaching: department, // or a new areaOfTeaching variable if available
+                            gradeLevels: [gradeLevel],  // wrap string in array or use multi-select array
                             email: email,
                             password: password,
-                            fullName: fullName,
-                            schoolName: schoolName,
-                            gradeLevel: gradeLevel,
-                            department: department.isEmpty ? nil : department
+                            confirmPassword: confirmPassword
                         )
                         onSignUp(teacherData)
                     }) {
@@ -444,17 +484,23 @@ struct WelcomeContentView: View {
                 Text("Sign in to access:")
                     .font(.headline)
                     .foregroundColor(.Orange)
+                HStack{
 
-                VStack(alignment: .leading, spacing: 15) {
-                    FeatureItem(icon: "camera.fill", text: "Capture student work with photos")
-                    FeatureItem(icon: "qrcode", text: "Automatic QR code assignment")
-                    FeatureItem(icon: "chart.line.uptrend.xyaxis", text: "Track student progress over time")
-                    FeatureItem(icon: "cloud.fill", text: "Secure cloud storage")
-                    FeatureItem(icon: "person.3.fill", text: "Manage multiple classrooms")
+                        VStack(alignment: .leading, spacing: 15) {
+                            FeatureItem(icon: "camera.fill", text: "Capture student work with photos")
+                            FeatureItem(icon: "qrcode", text: "Automatic QR code assignment")
+                        }
+                    VStack(alignment: .leading, spacing: 25){
+                            FeatureItem(icon: "chart.line.uptrend.xyaxis", text: "Track student progress over time")
+                            FeatureItem(icon: "cloud.fill", text: "Secure cloud storage")
+                        }
+
                 }
+                .padding(.horizontal, 80)
+                HStack (alignment: .center, spacing: 0){
+                        FeatureItem(icon: "person.3.fill", text: "Manage multiple classrooms")
+                    }
             }
-            .padding(.horizontal, 40)
-
             Spacer()
         }
         .padding(.horizontal, 20)
@@ -463,13 +509,16 @@ struct WelcomeContentView: View {
 
 // MARK: - Teacher Sign Up Data Model
 struct TeacherSignUpData {
-    let email: String
-    let password: String
-    let fullName: String
-    let schoolName: String
-    let gradeLevel: String
-    let department: String?
+    var firstName: String
+    var lastName: String
+    var schoolName: String
+    var areaOfTeaching: String
+    var gradeLevels: [String] // Multi-select
+    var email: String
+    var password: String
+    var confirmPassword: String
 }
+
 
 struct Login_Previews: PreviewProvider {
     static var previews: some View {

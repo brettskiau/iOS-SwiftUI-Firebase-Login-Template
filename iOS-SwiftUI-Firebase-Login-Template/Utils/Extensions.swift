@@ -13,10 +13,13 @@ public extension Color {
 public extension TextField {
     func withLoginStyles() -> some View {
         self.padding()
+            .frame(maxWidth: 350)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.Orange, lineWidth: 2)
             )
+            .background(Color(red: 1.0, green: 0.98, blue: 0.94))
+            .cornerRadius(8)
             .disableAutocorrection(true)
             .autocapitalization(.none)
             .padding(.bottom, 20)
@@ -26,10 +29,13 @@ public extension TextField {
 public extension SecureField {
     func withSecureFieldStyles() -> some View {
         self.padding()
+            .frame(maxWidth: 350)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.Orange, lineWidth: 2)
             )
+            .background(Color(red: 1.0, green: 0.98, blue: 0.94))
+            .cornerRadius(8)
             .disableAutocorrection(true)
             .autocapitalization(.none)
             .padding(.bottom, 20)

@@ -31,9 +31,19 @@
 		FC2E308D2E2CF9DF003DAB92 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = FC2E308C2E2CF9DF003DAB92 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		FC2E308F2E2CF9DF003DAB92 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = FC2E308E2E2CF9DF003DAB92 /* FirebaseDatabase */; };
 		FC2E30912E2D0FA8003DAB92 /* mymarkbook_development_tracker.md in Resources */ = {isa = PBXBuildFile; fileRef = FC2E30902E2D0FA8003DAB92 /* mymarkbook_development_tracker.md */; };
+		FC5C845F2E304B8B00653394 /* SideBarViewMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC5C845E2E304B8B00653394 /* SideBarViewMain.swift */; };
 		FC6A50202E2FA6E200026C28 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = FC6A501F2E2FA6E200026C28 /* FirebaseFirestore */; };
 		FC6A50222E2FA6E200026C28 /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = FC6A50212E2FA6E200026C28 /* FirebaseFirestoreCombine-Community */; };
 		FCAB88372E2F129B00378CBF /* SignUpFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAB88362E2F129B00378CBF /* SignUpFormView.swift */; };
+		FCAF8EDD2E3399B300311517 /* UploadModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAF8EDC2E3399B300311517 /* UploadModels.swift */; };
+		FCAF8EE12E3399D900311517 /* QRCodeDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAF8EE02E3399D900311517 /* QRCodeDetectionService.swift */; };
+		FCAF8EE32E339AA000311517 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAF8EE22E339AA000311517 /* ImagePicker.swift */; };
+		FCAF8EE52E339B5200311517 /* student.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAF8EE42E339B5200311517 /* student.swift */; };
+		FCAF8EE72E339B8F00311517 /* StudentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAF8EE62E339B8F00311517 /* StudentRepository.swift */; };
+		FCAF8EE92E339BE800311517 /* ImageUploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAF8EE82E339BE800311517 /* ImageUploadService.swift */; };
+		FCAF8EED2E339C8100311517 /* UploadProgressOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAF8EEC2E339C8100311517 /* UploadProgressOverlay.swift */; };
+		FCFA258A2E33A2F800A3482E /* UploadAssessmentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCFA25892E33A2F800A3482E /* UploadAssessmentViewModel.swift */; };
+		FCFA258C2E33A47C00A3482E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FCFA258B2E33A47C00A3482E /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,7 +66,16 @@
 		14F252F0299C133600DAC3B8 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		FC2E30882E2CF987003DAB92 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FC2E30902E2D0FA8003DAB92 /* mymarkbook_development_tracker.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = mymarkbook_development_tracker.md; sourceTree = "<group>"; };
+		FC5C845E2E304B8B00653394 /* SideBarViewMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideBarViewMain.swift; sourceTree = "<group>"; };
 		FCAB88362E2F129B00378CBF /* SignUpFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpFormView.swift; sourceTree = "<group>"; };
+		FCAF8EDC2E3399B300311517 /* UploadModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadModels.swift; sourceTree = "<group>"; };
+		FCAF8EE02E3399D900311517 /* QRCodeDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeDetectionService.swift; sourceTree = "<group>"; };
+		FCAF8EE22E339AA000311517 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		FCAF8EE42E339B5200311517 /* student.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = student.swift; sourceTree = "<group>"; };
+		FCAF8EE62E339B8F00311517 /* StudentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentRepository.swift; sourceTree = "<group>"; };
+		FCAF8EE82E339BE800311517 /* ImageUploadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUploadService.swift; sourceTree = "<group>"; };
+		FCAF8EEC2E339C8100311517 /* UploadProgressOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadProgressOverlay.swift; sourceTree = "<group>"; };
+		FCFA25892E33A2F800A3482E /* UploadAssessmentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadAssessmentViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -76,6 +95,7 @@
 				FC2E308D2E2CF9DF003DAB92 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				FC6A50202E2FA6E200026C28 /* FirebaseFirestore in Frameworks */,
 				147A32682D7B361F00DD45A5 /* FirebaseCore in Frameworks */,
+				FCFA258C2E33A47C00A3482E /* FirebaseStorage in Frameworks */,
 				FC2E308F2E2CF9DF003DAB92 /* FirebaseDatabase in Frameworks */,
 				147A32662D7B361F00DD45A5 /* FirebaseAuth in Frameworks */,
 			);
@@ -87,6 +107,11 @@
 		1410E3AC2997811B005E4FBF = {
 			isa = PBXGroup;
 			children = (
+				FCFA25892E33A2F800A3482E /* UploadAssessmentViewModel.swift */,
+				FCAF8EE42E339B5200311517 /* student.swift */,
+				FCAF8EE62E339B8F00311517 /* StudentRepository.swift */,
+				FCAF8EE82E339BE800311517 /* ImageUploadService.swift */,
+				FCAF8EEC2E339C8100311517 /* UploadProgressOverlay.swift */,
 				14F252F0299C133600DAC3B8 /* .gitignore */,
 				1410E3B72997811B005E4FBF /* iOS-SwiftUI-Firebase-Login-Template */,
 				1410E3B62997811B005E4FBF /* Products */,
@@ -132,10 +157,13 @@
 		1410E3C729978161005E4FBF /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FC5C845E2E304B8B00653394 /* SideBarViewMain.swift */,
 				1410E3D2299781F3005E4FBF /* Home.swift */,
 				1410E3D0299781E0005E4FBF /* Login.swift */,
 				FCAB88362E2F129B00378CBF /* SignUpFormView.swift */,
 				1410E3D42997833E005E4FBF /* Components */,
+				FCAF8EDC2E3399B300311517 /* UploadModels.swift */,
+				FCAF8EE02E3399D900311517 /* QRCodeDetectionService.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -151,6 +179,7 @@
 		1410E3D42997833E005E4FBF /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				FCAF8EE22E339AA000311517 /* ImagePicker.swift */,
 				147A32772D7BEB7600DD45A5 /* LoadingView.swift */,
 				1410E3F029978F97005E4FBF /* SocialLogins.swift */,
 			);
@@ -205,6 +234,7 @@
 				FC2E308E2E2CF9DF003DAB92 /* FirebaseDatabase */,
 				FC6A501F2E2FA6E200026C28 /* FirebaseFirestore */,
 				FC6A50212E2FA6E200026C28 /* FirebaseFirestoreCombine-Community */,
+				FCFA258B2E33A47C00A3482E /* FirebaseStorage */,
 			);
 			productName = "iOS-SwiftUI-Firebase-Login-Template";
 			productReference = 1410E3B52997811B005E4FBF /* iOS-SwiftUI-Firebase-Login-Template.app */;
@@ -218,14 +248,14 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1400;
-				LastUpgradeCheck = 1400;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					1410E3B42997811B005E4FBF = {
 						CreatedOnToolsVersion = 14.0;
 					};
 				};
 			};
-			buildConfigurationList = 1410E3B02997811B005E4FBF /* Build configuration list for PBXProject "iOS-SwiftUI-Firebase-Login-Template" */;
+			buildConfigurationList = 1410E3B02997811B005E4FBF /* Build configuration list for PBXProject "MyMarkBook V3.0" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -269,14 +299,23 @@
 			files = (
 				1410E3F129978F97005E4FBF /* SocialLogins.swift in Sources */,
 				147A32762D7BE9A200DD45A5 /* SignInState.swift in Sources */,
+				FCAF8EE32E339AA000311517 /* ImagePicker.swift in Sources */,
+				FCFA258A2E33A2F800A3482E /* UploadAssessmentViewModel.swift in Sources */,
 				1410E3CD299781C7005E4FBF /* AuthenticationViewModel.swift in Sources */,
 				1410E3EB299788F7005E4FBF /* Extensions.swift in Sources */,
 				FCAB88372E2F129B00378CBF /* SignUpFormView.swift in Sources */,
 				1410E3BB2997811B005E4FBF /* ContentView.swift in Sources */,
+				FCAF8EED2E339C8100311517 /* UploadProgressOverlay.swift in Sources */,
+				FCAF8EE92E339BE800311517 /* ImageUploadService.swift in Sources */,
 				147A32782D7BEB7600DD45A5 /* LoadingView.swift in Sources */,
 				147A32742D7BE85C00DD45A5 /* AuthError.swift in Sources */,
+				FCAF8EE52E339B5200311517 /* student.swift in Sources */,
 				1410E3B92997811B005E4FBF /* iOS_SwiftUI_Firebase_Login_TemplateApp.swift in Sources */,
 				1410E3D1299781E0005E4FBF /* Login.swift in Sources */,
+				FCAF8EE72E339B8F00311517 /* StudentRepository.swift in Sources */,
+				FCAF8EE12E3399D900311517 /* QRCodeDetectionService.swift in Sources */,
+				FC5C845F2E304B8B00653394 /* SideBarViewMain.swift in Sources */,
+				FCAF8EDD2E3399B300311517 /* UploadModels.swift in Sources */,
 				1410E3E529978887005E4FBF /* LoginOptions.swift in Sources */,
 				1410E3D3299781F3005E4FBF /* Home.swift in Sources */,
 			);
@@ -318,9 +357,12 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = Q85YPT3SC8;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -376,9 +418,12 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = Q85YPT3SC8;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -403,8 +448,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"iOS-SwiftUI-Firebase-Login-Template/Preview Content\"";
-				DEVELOPMENT_TEAM = Q85YPT3SC8;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS-SwiftUI-Firebase-Login-Template/Info.plist";
@@ -446,8 +492,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"iOS-SwiftUI-Firebase-Login-Template/Preview Content\"";
-				DEVELOPMENT_TEAM = Q85YPT3SC8;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS-SwiftUI-Firebase-Login-Template/Info.plist";
@@ -483,7 +530,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1410E3B02997811B005E4FBF /* Build configuration list for PBXProject "iOS-SwiftUI-Firebase-Login-Template" */ = {
+		1410E3B02997811B005E4FBF /* Build configuration list for PBXProject "MyMarkBook V3.0" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1410E3C22997811D005E4FBF /* Debug */,
@@ -572,6 +619,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 147A32622D7B361F00DD45A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseFirestoreCombine-Community";
+		};
+		FCFA258B2E33A47C00A3482E /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 147A32622D7B361F00DD45A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -42,7 +42,7 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
     // MARK: - Initialization
     init() {
         // Initialize cache when repository is created
-        updateCache()
+//        updateCache()
     }
 
     // MARK: - Public Methods
@@ -52,6 +52,11 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
     func loadStudents(for teacherId: String) async throws -> [Student] {
         isLoading = true
         error = nil
+
+        // ADD THIS: Use defer to ensure isLoading is always set to false
+        defer {
+            isLoading = false
+        }
 
         do {
             print("🔄 Loading students for teacher: \(teacherId)")
@@ -63,7 +68,7 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
 
             let snapshot = try await query.getDocuments()
 
-            let loadedStudents = try snapshot.documents.compactMap { document -> Student? in
+            let loadedStudents = snapshot.documents.compactMap { document -> Student? in
                 do {
                     var student = try document.data(as: Student.self)
                     student.id = document.documentID
@@ -73,7 +78,6 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
                     return nil
                 }
             }
-
             self.students = loadedStudents
             updateCache()
 
@@ -85,7 +89,7 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
             self.error = error
             throw error
         }
-            isLoading = false        
+        // REMOVE THIS LINE: isLoading = false (it's now in defer block)
     }
 
     /// Finds a student by QR code (uses cache for performance)
@@ -94,6 +98,7 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
     }
 
     /// Adds a new student to the database
+@MainActor
     func addStudent(_ student: Student) async throws -> Student {
         do {
             // Validate student data
@@ -128,6 +133,7 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
     }
 
     /// Updates an existing student in the database
+    @MainActor
     func updateStudent(_ student: Student) async throws {
         guard let studentId = student.id else {
             throw StudentRepositoryError.missingStudentID
@@ -259,6 +265,7 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
     // MARK: - Batch Operations
 
     /// Adds multiple students in a batch operation
+    @MainActor
     func addStudents(_ students: [Student]) async throws -> [Student] {
         let batch = db.batch()
         var addedStudents: [Student] = []
@@ -349,7 +356,7 @@ class StudentRepository: ObservableObject, StudentRepositoryProtocol {
     }
 
     // MARK: - Private Methods
-
+    @MainActor
     private func updateCache() {
         qrCodeCache = Dictionary(uniqueKeysWithValues: students.map { ($0.qrCode, $0) })
     }

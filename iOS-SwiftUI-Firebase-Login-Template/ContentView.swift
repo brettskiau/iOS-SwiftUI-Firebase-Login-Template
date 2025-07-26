@@ -38,6 +38,7 @@ struct ContentView: View {
                             }
                         }
                         .frame(width: geometry.size.width * sidebarWidth)
+                        .frame(maxHeight: .infinity)
                         .background(Color(hex: "FFF6E2"))
 
                         // Right Content - animated width with your custom design
@@ -49,7 +50,9 @@ struct ContentView: View {
                             }
                         }
                         .frame(width: geometry.size.width * (1 - sidebarWidth))
+                        .frame(maxHeight: .infinity)
                     }
+                    .frame(maxHeight: .infinity)
                     .onAppear {
                         // Trigger animation when authenticated
                         withAnimation(.easeInOut(duration: 0.8)) {
@@ -110,39 +113,77 @@ struct ContentView: View {
 struct AuthenticatedMainContentView: View {
     let selectedView: String
 
+    // Create a shared view model at this level
+    @StateObject private var uploadViewModel = UploadAssessmentViewModel(
+        studentRepository: StudentRepository(),
+        imageUploadService: ImageUploadService(),
+        qrDetectionService: QRCodeDetectionService()
+    )
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 32) {
-            Spacer()
+        VStack(alignment: .leading, spacing: 0) {
 
-            // Title
-            Text(selectedView)
-                .font(.system(size: 72, weight: .heavy, design: .rounded))
-                .foregroundColor(.primary)
-                .padding(.top, 32)
+            // FIXED TOP SECTION - Same for all views
+            VStack(alignment: .leading, spacing: 32) {
+                // Fixed top spacer - ensures consistent starting position
+                Spacer()
+                    .frame(height: 60)
 
-            // Content based on selection
-            switch selectedView {
-            case "Summary":
-                AuthenticatedSummaryContentView()
-            case "Students":
-                PlaceholderContentView(viewName: "Students")
-            case "Classes":
-                PlaceholderContentView(viewName: "Classes")
-            default:
-                PlaceholderContentView(viewName: selectedView)
+                // Title - same position for all views
+                Text(selectedView)
+                    .font(.system(size: 72, weight: .heavy, design: .rounded))
+                    .foregroundColor(.primary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 32)
+
+            // CONTENT SECTION - Scrollable and flexible
+            ScrollView {
+                VStack(alignment: .leading, spacing: 32) {
+                    // Content based on selection
+                    switch selectedView {
+                    case "Summary":
+                        AuthenticatedSummaryContentView(uploadViewModel: uploadViewModel)
+                    case "Students":
+                        PlaceholderContentView(viewName: "Students")
+                    case "Classes":
+                        PlaceholderContentView(viewName: "Classes")
+                    default:
+                        PlaceholderContentView(viewName: selectedView)
+                    }
+                }
+                .padding(.horizontal, 32)
+                .padding(.bottom, 32) // Bottom padding for scroll
             }
 
+            // BOTTOM SPACER - Ensures consistent bottom spacing
             Spacer()
+                .frame(height: 20)
         }
-        .padding(.horizontal, 32)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill entire area
         .background(Color(hex: "FFF6E2"))
+        // Move the overlay here - covers the entire main content area
+        .overlay {
+            if uploadViewModel.uploadState.isActive {
+                UploadProgressOverlay(
+                    uploadState: uploadViewModel.uploadState,
+                    students: uploadViewModel.studentRepository.students,
+                    searchQuery: $uploadViewModel.uploadState.searchQuery,
+                    onConfirm: uploadViewModel.confirmAssignment,
+                    onCancel: uploadViewModel.cancelUpload,
+                    onManualSelect: uploadViewModel.selectStudent
+                )
+            }
+        }
     }
 }
 
 // MARK: - Authenticated Summary Content View
 struct AuthenticatedSummaryContentView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+
+    // Accept the upload view model from parent
+    @ObservedObject var uploadViewModel: UploadAssessmentViewModel
 
     // Mock data - this will be replaced with real data later
     private let favouriteClasses = [
@@ -156,8 +197,8 @@ struct AuthenticatedSummaryContentView: View {
             HStack(spacing: 24) {
                 StatCard(title: "Recent Activity", value: "5 new assessments", color: .blue)
                 StatCard(title: "Total Students", value: "48", color: .blue)
-                // UPDATED: Pass proper dependencies to UploadAssessmentCard
-                UploadAssessmentCard()
+                // Pass the view model to the upload card
+                UploadAssessmentCard(viewModel: uploadViewModel)
             }
 
             // Main Summary Card
@@ -203,7 +244,7 @@ struct AuthenticatedSummaryContentView: View {
     }
 }
 
-// MARK: - Reusable Components (from your original design)
+// MARK: - Reusable Components
 
 struct StatCard: View {
     let title: String
@@ -232,15 +273,9 @@ struct StatCard: View {
     }
 }
 
-// REPLACE your existing UploadAssessmentCard in ContentView with this:
-
 struct UploadAssessmentCard: View {
-    @StateObject private var viewModel = UploadAssessmentViewModel(
-        studentRepository: StudentRepository(),
-        imageUploadService: ImageUploadService(),
-        qrDetectionService: QRCodeDetectionService()
-    )
-
+    // Accept the view model from parent instead of creating it
+    @ObservedObject var viewModel: UploadAssessmentViewModel
     @EnvironmentObject var authViewModel: AuthenticationViewModel
 
     var body: some View {
@@ -314,18 +349,6 @@ struct UploadAssessmentCard: View {
         .sheet(isPresented: $viewModel.showingImagePicker) {
             ImagePicker(sourceType: viewModel.sourceType) { image in
                 viewModel.processImage(image)
-            }
-        }
-        .overlay {
-            if viewModel.uploadState.isActive {
-                UploadProgressOverlay(
-                    uploadState: viewModel.uploadState,
-                    students: viewModel.studentRepository.students,
-                    searchQuery: $viewModel.uploadState.searchQuery,
-                    onConfirm: viewModel.confirmAssignment,
-                    onCancel: viewModel.cancelUpload,
-                    onManualSelect: viewModel.selectStudent
-                )
             }
         }
         .alert("Upload Error", isPresented: $viewModel.showingError) {
@@ -427,29 +450,51 @@ struct PlaceholderContentView: View {
     let viewName: String
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 24)
-            .fill(Color.white)
-            .frame(maxWidth: .infinity, minHeight: 400)
-            .overlay(
-                VStack(spacing: 16) {
-                    Image(systemName: "hammer.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.orange)
+        VStack(spacing: 32) {
+            // Ensure consistent height for all placeholder views
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.white)
+                .frame(maxWidth: .infinity, maxHeight: 400) // FIXED HEIGHT
+                .overlay(
+                    VStack(spacing: 16) {
+                        Image(systemName: "hammer.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.orange)
 
-                    Text("\(viewName) View")
-                        .font(.title)
-                        .fontWeight(.bold)
+                        Text("\(viewName) View")
+                            .font(.title)
+                            .fontWeight(.bold)
 
-                    Text("This section will be implemented soon!")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                        Text("This section will be implemented soon!")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                )
+                .shadow(color: .black.opacity(0.05), radius: 8)
+
+            // Add some additional content to make it feel complete
+            HStack(spacing: 24) {
+                ForEach(0..<3) { index in
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(height: 120)
+                        .overlay(
+                            VStack {
+                                Image(systemName: "doc.text")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.gray)
+                                Text("Feature \(index + 1)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        )
                 }
-            )
-            .shadow(color: .black.opacity(0.05), radius: 8)
+            }
+        }
     }
 }
 
-// MARK: - Data Models (keep your existing ones)
+// MARK: - Data Models
 struct FavouriteClass: Identifiable {
     let id = UUID()
     let name: String
